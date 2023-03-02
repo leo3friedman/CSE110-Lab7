@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.Observer;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -33,7 +34,8 @@ public class NoteRepository {
 
         Observer<Note> updateFromRemote = theirNote -> {
             var ourNote = note.getValue();
-            if (ourNote == null || ourNote.updatedAt < theirNote.updatedAt) {
+            if (theirNote == null) return; // do nothing
+            if (ourNote == null || ourNote.version < theirNote.version) {
                 upsertLocal(theirNote);
             }
         };
@@ -63,7 +65,7 @@ public class NoteRepository {
     }
 
     public void upsertLocal(Note note) {
-        note.updatedAt = System.currentTimeMillis();
+        note.version = note.version + 1;
         dao.upsert(note);
     }
 
