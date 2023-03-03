@@ -1,10 +1,13 @@
 package edu.ucsd.cse110.sharednotes.model;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 import android.util.Log;
 
 import androidx.annotation.AnyThread;
 import androidx.annotation.MainThread;
 import androidx.annotation.WorkerThread;
+import androidx.lifecycle.LiveData;
 
 import com.google.gson.Gson;
 
@@ -23,17 +26,39 @@ public class NoteAPI {
 
     private volatile static NoteAPI instance = null;
 
+    private String serverURL = "https://sharednotes.goto.ucsd.edu/notes/";
     private OkHttpClient client;
 
     public NoteAPI() {
         this.client = new OkHttpClient();
     }
 
+
     public static NoteAPI provide() {
         if (instance == null) {
             instance = new NoteAPI();
         }
         return instance;
+    }
+
+    @WorkerThread
+    public Note getNote(String title){
+        String encodedTitle = title.replace(" ", "%20");
+        System.out.println(encodedTitle);
+        Request request = new Request.Builder()
+                .url(serverURL+encodedTitle)
+                .method("GET", null)
+                .build();
+        try (var response = client.newCall(request).execute()) {
+            assert response.body() != null;
+            var body = response.body().string();
+            System.out.println(body);
+            return new Gson().fromJson(body, Note.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Note of that title doesn't exist");
+            return null;
+        }
     }
 
     /**
@@ -69,6 +94,14 @@ public class NoteAPI {
     public Future<String> echoAsync(String msg) {
         var executor = Executors.newSingleThreadExecutor();
         var future = executor.submit(() -> echo(msg));
+
+        // We can use future.get(1, SECONDS) to wait for the result.
+        return future;
+    }
+    @AnyThread
+    public Future<Note> getNoteAsync(String title) {
+        var executor = Executors.newSingleThreadExecutor();
+        var future = executor.submit(() -> getNote(title));
 
         // We can use future.get(1, SECONDS) to wait for the result.
         return future;
