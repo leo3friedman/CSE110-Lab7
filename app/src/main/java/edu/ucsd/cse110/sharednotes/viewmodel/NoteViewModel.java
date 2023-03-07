@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 
+import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
@@ -31,18 +32,14 @@ public class NoteViewModel extends AndroidViewModel {
         // The returned live data should update whenever there is a change in
         // the database, or when the server returns a newer version of the note.
         // Polling interval: 3s.
-//        if (note == null) {
-//            System.out.println("NoteViewModel Getting Local");
-//            note = repo.getLocal(title);
-//        }
-//        else {
-//            System.out.println("NoteViewModel Getting Remote");
-//            note = repo.getSynced(title);
-//        }
-        return repo.getSynced(title);
+        note = repo.getRemote(title);
+        if (note == null) {
+            note = repo.getLocal(title);
+        }
+        return note;
     }
 
-    public void save(Note note) {
+    public void save(Note note) throws IOException {
         // TODO: try to upload the note to the server.
         repo.upsertSynced(note);
     }

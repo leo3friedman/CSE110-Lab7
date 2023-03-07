@@ -11,11 +11,15 @@ import androidx.lifecycle.LiveData;
 
 import com.google.gson.Gson;
 
+import java.io.IOException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 public class NoteAPI {
     // TODO: Implement the API using OkHttp!
@@ -25,6 +29,8 @@ public class NoteAPI {
     // TODO: Read the docs: https://sharednotes.goto.ucsd.edu/docs
 
     private volatile static NoteAPI instance = null;
+
+    public static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
 
     private String serverURL = "https://sharednotes.goto.ucsd.edu/notes/";
     private OkHttpClient client;
@@ -42,7 +48,7 @@ public class NoteAPI {
     }
 
     @WorkerThread
-    public Note getNote(String title){
+    public Note getNote(String title) {
         String encodedTitle = title.replace(" ", "%20");
         System.out.println(encodedTitle);
         Request request = new Request.Builder()
@@ -58,6 +64,18 @@ public class NoteAPI {
             e.printStackTrace();
             System.out.println("Note of that title doesn't exist");
             return null;
+        }
+    }
+
+    @WorkerThread
+    public String putNote(String json) throws IOException {
+        RequestBody body = RequestBody.create(json, JSON);
+        Request request = new Request.Builder()
+                .url(serverURL)
+                .post(body)
+                .build();
+        try (Response response = client.newCall(request).execute()) {
+            return response.body().string();
         }
     }
 

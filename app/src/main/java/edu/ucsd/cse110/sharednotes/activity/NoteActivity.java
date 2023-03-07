@@ -12,6 +12,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
 
+import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
@@ -87,8 +88,13 @@ public class NoteActivity extends AppCompatActivity {
             assert updatedNote != null;
 
             updatedNote.content = updatedContent;
+            System.out.println("Save called");
 
-            viewModel.save(updatedNote);
+            try {
+                viewModel.save(updatedNote);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         });
     }
 

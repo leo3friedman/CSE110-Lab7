@@ -7,6 +7,7 @@ import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -58,7 +59,7 @@ public class NoteRepository {
         return note;
     }
 
-    public void upsertSynced(Note note) {
+    public void upsertSynced(Note note) throws IOException {
         upsertLocal(note);
         upsertRemote(note);
     }
@@ -109,8 +110,10 @@ public class NoteRepository {
 //        throw new UnsupportedOperationException("Not implemented yet");
     }
 
-    public void upsertRemote(Note note) {
+    public void upsertRemote(Note note) throws IOException {
         // TODO: Implement upsertRemote!
+//        String noteJSON = note.toJSON();
+//        System.out.println("JSON: " + api.putNote(noteJSON));
         throw new UnsupportedOperationException("Not implemented yet");
     }
 }
